@@ -1,0 +1,17 @@
+[package]
+name = "zvc-gui"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.75"
+cpal = "0.15.2"
+eframe = "0.23.0"
+ort = "1.16.2"
+wav = "1.0.0"
+ndarray = { version = "0.15.0", features = ["blas"] }
+blas-src = { version = "0.8", features = ["openblas"] }
+openblas-src = { version = "0.10", features = ["cblas", "system"] }
+rustfft = "6.1.0"
