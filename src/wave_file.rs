@@ -38,7 +38,7 @@ pub fn load(path: &Path) -> (wav::Header, Array2<f32>) {
     (header, data)
 }
 
-pub fn save(data: Array2<f32>, header: wav::Header, path: &Path) {
+pub fn save(header: wav::Header, data: Array2<f32>, path: &Path) {
     let data = data.remove_axis(Axis(0));
     let data = wav::BitDepth::Sixteen(
         data.to_vec()
