@@ -1,4 +1,4 @@
-use crate::fft::{istft, spectrogram};
+use crate::fft::{istft_without_window, spectrogram};
 use ndarray::prelude::*;
 use ndrustfft::Complex;
 use ort::{
@@ -144,13 +144,13 @@ impl VoiceConvertor {
             .unwrap();
 
         let mag = mag.map(|x| if x <= &6.0 { x.exp() } else { 6.0_f32.exp() });
-        let phase = phase.map(|m| Complex {
-            re: m.cos(),
-            im: m.sin(),
+        let phase = phase.map(|p| Complex {
+            re: p.cos(),
+            im: p.sin(),
         });
         let s = phase * mag;
         println!("{:?}", s);
-        let output = istft(s, 1024, 256);
+        let output = istft_without_window(s, 1024, 256);
         Ok(output)
     }
 }

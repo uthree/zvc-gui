@@ -59,9 +59,6 @@ pub fn stft(input: Array2<f32>, n_fft: usize, hop_length: usize) -> Array3<Compl
 
 // Input: [Batch, Frequency, Length], Output: [Batch, Length]
 pub fn istft(input: Array3<Complex<f32>>, n_fft: usize, hop_length: usize) -> Array2<f32> {
-    // Calculate FFT bin
-    let fft_bin = n_fft / 2 + 1;
-
     // Initialize window
     let window = hann_window(n_fft);
 
@@ -88,6 +85,45 @@ pub fn istft(input: Array3<Complex<f32>>, n_fft: usize, hop_length: usize) -> Ar
 
             // Apply window
             let x = x / window.clone();
+
+            // Write output
+            output.slice_mut(s![b, begin..end]).assign(&x);
+
+            // Move window
+            i += 1;
+            begin += hop_length;
+            end += hop_length;
+        }
+    }
+    output
+}
+
+// Input: [Batch, Frequency, Length], Output: [Batch, Length]
+pub fn istft_without_window(
+    input: Array3<Complex<f32>>,
+    n_fft: usize,
+    hop_length: usize,
+) -> Array2<f32> {
+    // Calculate wave length
+    let wave_length = hop_length * input.shape()[2] + hop_length + n_fft;
+
+    // Initialize output
+    let mut output: Array2<f32> = Array::zeros((input.shape()[0], wave_length));
+
+    // Initialize IFFT Handler
+    let mut handler = R2cFftHandler::<f32>::new(n_fft);
+
+    for (b, x_hat) in input.axis_iter(Axis(0)).enumerate() {
+        let mut begin = 0;
+        let mut end = n_fft;
+        let mut i = 0;
+
+        while i < input.shape()[2] {
+            // Process IFFT
+            let mut x: Array1<f32> = Array::zeros((n_fft,));
+            let x_hat = x_hat.slice(s![.., i]).map(|elem| elem.clone());
+
+            ndifft_r2c(&x_hat, &mut x, &mut handler, 0);
 
             // Write output
             output.slice_mut(s![b, begin..end]).assign(&x);
