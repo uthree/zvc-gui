@@ -1,13 +1,13 @@
 use ndarray::concatenate;
 use ndarray::prelude::*;
-use ndrustfft::{ndfft_r2c, ndifft_r2c, Complex, FftHandler, R2cFftHandler};
+use ndrustfft::{ndfft_r2c, ndifft_r2c, Complex, R2cFftHandler};
 use plotters::prelude::*;
 use plotters_backend::BackendColor;
 use std::f32::consts::PI;
 
 fn hann_window(size: usize) -> Array1<f32> {
     let window: Array1<f32> = Array::linspace(0.0, 1.0, size);
-    let window = (window * 2.0 * PI).mapv(f32::cos) * -0.5 + 0.5 + 1e-6;
+    let window = (window * 2.0 * PI).mapv(f32::cos) * -0.5 + 0.5 + 1e-4;
     window
 }
 
