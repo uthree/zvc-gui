@@ -17,3 +17,12 @@ Cargo.lock
 # Added by cargo
 
 /target
+
+# Wave file and Onnx
+*.mp3
+*.wav
+*.ogg
+*.onnx
+
+# Png
+*.png
