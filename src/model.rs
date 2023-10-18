@@ -115,8 +115,6 @@ impl VoiceConvertor {
         let amp = CowArray::from(input.amplitude.into_dimensionality().unwrap());
         let noise = CowArray::from(Array::zeros((b, 512, l)).into_dimensionality().unwrap());
 
-        amp.for_each(|x| println!("{:?}", x));
-
         let decoder_inputs = vec![
             Value::from_array(self.decoder.allocator(), &features)?,
             Value::from_array(self.decoder.allocator(), &f0)?,
@@ -149,7 +147,6 @@ impl VoiceConvertor {
             im: p.sin(),
         });
         let s = phase * mag;
-        println!("{:?}", s);
         let output = istft_without_window(s, 1024, 256);
         Ok(output)
     }

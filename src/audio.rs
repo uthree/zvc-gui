@@ -1,5 +1,3 @@
-use std::convert::TryInto;
-
 use fon::chan::Ch32;
 use fon::Audio;
 
