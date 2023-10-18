@@ -9,9 +9,9 @@ edition = "2021"
 anyhow = "1.0.75"
 cpal = "0.15.2"
 eframe = "0.23.0"
-ort = "1.16.2"
+ort = {version = "1.16.2", features = ["cuda"]}
 wav = "1.0.0"
-ndarray = { version = "0.15.0", features = ["blas"] }
+ndarray = {version = "0.15.0", features = ["blas"]}
 rustfft = "6.1.0"
 fon = "0.6.0"
 ndrustfft = "0.4.1"
@@ -25,6 +25,5 @@ blas-src = { version = "0.8", features = ["openblas"] }
 openblas-src = { version = "0.10", features = ["cblas", "system"] }
 
 [target.'cfg(windows)'.dependencies]
-blas-src = { version = "0.8", features = ["intel-mkl"] }
-intel-mkl-src = "0.8.1"
+ndarray = { version = "0.15.0", features = [] }
 
