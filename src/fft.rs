@@ -112,6 +112,9 @@ pub fn istft(input: Array3<Complex<f32>>, n_fft: usize, hop_length: usize) -> Ar
     // Calculate wave length
     let wave_length = hop_length * input.shape()[2] + hop_length + n_fft;
 
+    // Calculate overwrapping rate
+    let overwrapping_rate = (n_fft / hop_length / 2) as f32;
+
     // Initialize output
     let mut output: Array2<f32> = Array::zeros((input.shape()[0], wave_length));
 
@@ -133,8 +136,11 @@ pub fn istft(input: Array3<Complex<f32>>, n_fft: usize, hop_length: usize) -> Ar
             // Apply window
             let x = x / window.clone();
 
+            // Add
+            let assign_part = output.slice(s![b, begin..end]).to_owned() + x;
+
             // Write output
-            output.slice_mut(s![b, begin..end]).assign(&x);
+            output.slice_mut(s![b, begin..end]).assign(&assign_part);
 
             // Move window
             i += 1;
@@ -142,7 +148,7 @@ pub fn istft(input: Array3<Complex<f32>>, n_fft: usize, hop_length: usize) -> Ar
             end += hop_length;
         }
     }
-    output
+    output / overwrapping_rate
 }
 
 // Input: [Batch, Frequency, Length], Output: [Batch, Length]
@@ -153,6 +159,9 @@ pub fn istft_without_window(
 ) -> Array2<f32> {
     // Calculate wave length
     let wave_length = hop_length * input.shape()[2] + hop_length + n_fft;
+
+    // Calculate overwrapping rate
+    let overwrapping_rate = (n_fft / hop_length / 2) as f32;
 
     // Initialize output
     let mut output: Array2<f32> = Array::zeros((input.shape()[0], wave_length));
@@ -172,8 +181,11 @@ pub fn istft_without_window(
 
             ndifft_r2c(&x_hat, &mut x, &mut handler, 0);
 
+            // Add
+            let assign_part = output.slice(s![b, begin..end]).to_owned() + x;
+
             // Write output
-            output.slice_mut(s![b, begin..end]).assign(&x);
+            output.slice_mut(s![b, begin..end]).assign(&assign_part);
 
             // Move window
             i += 1;
@@ -181,7 +193,7 @@ pub fn istft_without_window(
             end += hop_length;
         }
     }
-    output
+    output / overwrapping_rate
 }
 
 // Calculate spectrogram

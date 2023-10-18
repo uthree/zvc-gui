@@ -150,4 +150,62 @@ impl VoiceConvertor {
         let output = istft_without_window(s, 1024, 256);
         Ok(output)
     }
+
+    pub fn match_features(
+        &mut self,
+        input: LatentRepresentation,
+        alpha: f32,
+    ) -> OrtResult<LatentRepresentation> {
+        let features_clone = input.content.clone();
+        let features = CowArray::from(input.content.into_dimensionality().unwrap());
+        let vl_inputs = vec![Value::from_array(
+            self.voice_library.allocator(),
+            &features,
+        )?];
+        let vl_outputs = self.voice_library.run(vl_inputs)?;
+        let features: Array3<f32> = (&vl_outputs[0])
+            .try_extract()?
+            .view()
+            .deref()
+            .to_owned()
+            .into_dimensionality()
+            .unwrap();
+        Ok(LatentRepresentation {
+            amplitude: input.amplitude,
+            content: features * (1.0 - alpha) + features_clone * alpha,
+            f0: input.f0,
+        })
+    }
+
+    pub fn pitch_shift(
+        &self,
+        input: LatentRepresentation,
+        pitch_shift: f32,
+    ) -> LatentRepresentation {
+        let f0 = input.f0;
+        let f0 = f0.map(|f0| {
+            let mut pitch = 12.0 * (f0 / 440.0).log2() - 9.0;
+            pitch += pitch_shift;
+            440.0 * 2.0_f32.powf((pitch + 9.0) / 12.0)
+        });
+
+        LatentRepresentation {
+            amplitude: input.amplitude,
+            content: input.content,
+            f0: f0,
+        }
+    }
+
+    pub fn convert(
+        &mut self,
+        waveform: Array2<f32>,
+        pitch_shift: f32,
+        alpha: f32,
+    ) -> OrtResult<Array2<f32>> {
+        let latent = self.encode(waveform)?;
+        let latent = self.match_features(latent, alpha)?;
+        let latent = self.pitch_shift(latent, pitch_shift);
+        let wf = self.decode(latent)?;
+        Ok(wf)
+    }
 }
